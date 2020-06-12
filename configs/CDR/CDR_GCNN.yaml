@@ -1,0 +1,66 @@
+# data for train/test
+data_path: "/home/jp/workspace2/datasets/CDR_PubMed_with_KBID"
+bert_embedding_dir: "/home2/public/jp/CDR_bert_features"
+checkpoint_dir: "./checkpoint"
+log_dir: "./log"
+summary_dir: "./summary"
+
+dataset: "CDR"
+train_prefix: "dev_train"  # train+dev
+test_prefix: "dev_test"
+
+# embedding
+max_length: 620 # max length of CDR is 620
+use_bert_embedding: false
+bert_embedd_dim: 768  # use_bert_embedding=True
+embedd_dim: 100
+# For `use_bert_embedding`=false, whether to freeze the embedding matrix
+freeze_embedd: false # tune the PubMed embedding when training
+entity_type_num: 3  # 2 entity types (Chemical, Disease) plus `NONE`
+position_dim: 20  # gcn_in_dim: 2*position_dim + embedd_dim
+inp_dropout: 0.1
+
+# GCN encoder
+gcn_dim: 140
+num_edge_types: 10
+num_unRare_edge_types: 4
+num_blocks: 2
+gcn_use_gate: true
+gcn_dropout: 0.05
+gcn_residual: true  # if `gcn_residual` is set to be true, make sure that `gcn_dim=gcn_in_dim`
+bi_affine_ff_dim: 140
+bi_affine_dropout: 0.05
+
+# attenders
+entity_span_pooling: "mean"  #
+which_model: "GCNN"  # EncAgg, BiLSTM, BRAN-M
+use_bilinear: true  # This is useless for GCNN, GCNN always use bilinear
+relation_num: 2  # For CDR, 1 relation type (Chemical-Induced Disease) plus `NONE`
+train_on_trainanddev: true  # merge train/dev sets to train model
+lowercase: true  # whether lowercase tokens
+
+# other hyper-parameters
+batch_size: 32
+init_lr: 5.0e-4  # 5.0e-4
+lr_decay: 1.0  # lr_decay=1. means no decay
+use_lr_scheduler: false
+grad_clip_value: 10
+train_rel_limit_per_example: 506  # use all positive/negative pairs, to train
+train_hypernym_filter: true  # perform hypernym filtering to remove some negative pairs
+max_epoch: 25
+epoch_start_to_eval: 0
+
+# For test
+test_batch_size: 32
+test_rel_limit_per_example: 506  # all possible pairs should be fed for prediction
+test_hypernym_filter: true  # perform hypernym filtering to remove some negative pairs
+
+# average the parameters over the recent epochs, to to make the test performance be stable
+avg_params:
+  use_avg_params: True
+  num_recent_epochs: 10  # `0` means averaging the parameters up to this epoch
+parallel_forward: true
+
+
+
+
