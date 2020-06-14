@@ -26,7 +26,10 @@ python train.py --param_file ${param_file} --gpu 0,1 --exp_id EncAttAgg --randse
 python test.py --param_file ${param_file} --gpu 0 --exp_id EncAttAgg
 ```
 
-### References
+## Hyper-parameters
+![hyperparams](hyperparams.jpg)
+
+## References
 1. Wei, Chih-Hsuan and Peng, Yifan and Leaman, R. and Davis, Allan Peter and Mattingly, C.J. and Li, J. and Wiegers, T.C. and lu, Zhiyong. Overview of the BioCreative V chemical disease relation (CDR) task
 2. Li, Jiao and Sun, Yueping and Johnson, Robin J. and Sciaky, Daniela and Wei, Chih-Hsuan and Leaman, Robert and Davis, Allan Peter and Mattingly, Carolyn J. and Wiegers, Thomas C. and Lu, Zhiyong. BioCreative V CDR task corpus: a resource for chemical disease relation extraction
 3. Yao, Yuan  and Ye, Deming  and Li, Peng  and Han, Xu  and Lin, Yankai  and Liu, Zhenghao  and Liu, Zhiyuan  and Huang, Lixin  and Zhou, Jie  and Sun, Maosong. DocRED: A Large-Scale Document-Level Relation Extraction Dataset.
