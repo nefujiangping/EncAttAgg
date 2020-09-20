@@ -1,6 +1,6 @@
 EncAttAgg
 ---------
-This is the source code for ICKG 2020 paper "Improving Document-level Relation Extraction via Contextualizing Mention Representations and Weighting Mention Pairs"
+This is the source code for ICKG 2020 paper "[Improving Document-level Relation Extraction via Contextualizing Mention Representations and Weighting Mention Pairs]((https://conferences.computer.org/ickg/pdfs/ICKG2020-66r9RP2mQIZywMjHhQVtDI/815600a305/815600a305.pdf))"
 
 We propose an effective **Enc**oder-**Att**ender-**Agg**regator (EncAttAgg) model for ducument-level RE. This model introduced two attenders to tackle two problems: 1) We introduce a mutual attender layer to efficiently obtain the entity-pair-specific mention representations.
 2) We introduce an integration attender to weight mention pairs of a target entity pair.
@@ -26,8 +26,15 @@ python train.py --param_file ${param_file} --gpu 0,1 --exp_id EncAttAgg --randse
 python test.py --param_file ${param_file} --gpu 0 --exp_id EncAttAgg
 ```
 
-## Hyper-parameters
-![hyperparams](hyperparams.jpg)
+## Results and Hyper-parameters
+Main results on DocRED/CDR and the corresponding hyper-parameters are shown below.
+Please refer to the [paper](https://conferences.computer.org/ickg/pdfs/ICKG2020-66r9RP2mQIZywMjHhQVtDI/815600a305/815600a305.pdf) for more details of the experiments.
+
++ Results
+![main_results](images/main_results.png)
+
++ Hyper-parameters
+![hyperparams](images/hyperparams.jpg)
 
 ## References
 1. Wei, Chih-Hsuan and Peng, Yifan and Leaman, R. and Davis, Allan Peter and Mattingly, C.J. and Li, J. and Wiegers, T.C. and lu, Zhiyong. Overview of the BioCreative V chemical disease relation (CDR) task
