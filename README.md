@@ -25,6 +25,7 @@ python train.py --param_file ${param_file} --gpu 0,1 --exp_id EncAttAgg --randse
 ```shell
 python test.py --param_file ${param_file} --gpu 0 --exp_id EncAttAgg
 ```
+`param_file`s of the models are shown in the directory [configs](configs)
 
 ## Results and Hyper-parameters
 Main results on DocRED/CDR and the corresponding hyper-parameters are shown below.
