@@ -1,6 +1,6 @@
 EncAttAgg
 ---------
-This is the source code for ICKG 2020 paper "[Improving Document-level Relation Extraction via Contextualizing Mention Representations and Weighting Mention Pairs]((https://conferences.computer.org/ickg/pdfs/ICKG2020-66r9RP2mQIZywMjHhQVtDI/815600a305/815600a305.pdf))"
+This is the source code for ICKG 2020 paper "[Improving Document-level Relation Extraction via Contextualizing Mention Representations and Weighting Mention Pairs](https://conferences.computer.org/ickg/pdfs/ICKG2020-66r9RP2mQIZywMjHhQVtDI/815600a305/815600a305.pdf)"
 
 We propose an effective **Enc**oder-**Att**ender-**Agg**regator (EncAttAgg) model for ducument-level RE. This model introduced two attenders to tackle two problems: 1) We introduce a mutual attender layer to efficiently obtain the entity-pair-specific mention representations.
 2) We introduce an integration attender to weight mention pairs of a target entity pair.
