@@ -1,0 +1,1 @@
+util.py is copied from [Allennlp](https://allennlp.org/) https://github.com/allenai/allennlp/blob/master/allennlp/nn/util.py
