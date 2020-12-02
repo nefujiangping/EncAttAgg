@@ -19,7 +19,7 @@ We propose an effective **Enc**oder-**Att**ender-**Agg**regator (EncAttAgg) mode
 
 ## Usage
 ### data pre-processing
-Refer to [data pre-processing](https://github.com/nefujiangping/EncAttAgg/blob/master/pre-processing/README.md) for more details.
+Refer to [data pre-processing](https://github.com/nefujiangping/EncAttAgg/tree/master/pre-processing) for more details.
 
 ### train our model
 ```shell
