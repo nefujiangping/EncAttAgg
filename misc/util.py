@@ -89,7 +89,7 @@ def boolean_string(s):
 def load_params(params_file: str, args) -> Dict:
     def assert_bool_type(param, key):
         assert isinstance(param, bool), f"params.{key} Error, please check config file: {params_file}"
-    params = yaml.load(open(params_file).read(), yaml.CLoader)
+    params = yaml.load(open(params_file).read())
     for key, value in args.__dict__.items():
         assert key not in params, f"argparse and *.yaml have a same param: {key}"
         params[key] = value

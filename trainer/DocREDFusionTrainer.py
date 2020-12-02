@@ -232,7 +232,8 @@ class FusionTrainer(BaseTrainer):
                 input_lengths = np.sum(input_mask, axis=1)
                 max_c_len = int(np.max(input_lengths))
                 if self.use_bert_embedding:
-                    assert input_lengths.tolist() == batch_lens, 'len ERROR'
+                    if input_lengths.tolist() != batch_lens:
+                        print(f'len ERROR, {cur_batch}')
 
                 input_mask = context_idxs[:cur_bsz, :max_c_len] > 0
 
@@ -384,7 +385,8 @@ class FusionTrainer(BaseTrainer):
                 input_lengths = np.sum(input_mask, axis=1)
                 max_c_len = int(np.max(input_lengths))
                 if self.use_bert_embedding:
-                    assert input_lengths.tolist() == batch_lens, 'len ERROR'
+                    if input_lengths.tolist() != batch_lens:
+                        print(f"'len ERROR, {cur_batch}'")
                 input_mask = context_idxs[:cur_bsz, :max_c_len] > 0
 
                 if self.write_weights:

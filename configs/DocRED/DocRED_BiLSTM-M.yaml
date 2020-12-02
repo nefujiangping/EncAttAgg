@@ -1,6 +1,6 @@
 # data for train/test
-data_path: "/home/jp/workspace2/DocRED/code/prepro_data"
-bert_embedding_dir: "/home2/public/jp/DocRED"
+data_path: "./data/DocRED"
+bert_embedding_dir: "./data/DocRED"
 checkpoint_dir: "./checkpoint"
 log_dir: "./log"
 summary_dir: "./summary"
@@ -11,7 +11,7 @@ test_prefix: "dev_dev"
 
 # embedding
 max_length: 512
-use_bert_embedding: false
+use_bert_embedding: true
 bert_embedd_dim: 768
 # if use_bert_embedding=true and embedd_dim < bert_embedd_dim,
 #  bert embedding will be down-project to bert_embedd_dim

@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 import torch
 from torch import nn
-from allennlp.nn import util
+import models.utils as util
 
 from trainer.GCNN.CDR_GCNN_Trainer import CDRGCNNTrainer_Softmax
 from models.transformer import TransformerEncoder, TransformerEncoderLayer

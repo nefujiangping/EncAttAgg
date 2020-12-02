@@ -19,19 +19,22 @@ from __future__ import division
 from __future__ import print_function
 
 import codecs
-import collections
 import json
 import re
 
 import modeling
 import tokenization
 import tensorflow as tf
+import numpy as np
+import h5py
 
 flags = tf.flags
 
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string("input_file", None, "")
+
+flags.DEFINE_string("data_dir", None, "")
 
 flags.DEFINE_string("output_file", None, "")
 
@@ -352,77 +355,74 @@ def read_examples(input_file):
     return examples
 
 
-def main_origin(_):
-    tf.logging.set_verbosity(tf.logging.INFO)
-
-    layer_indexes = [int(x) for x in FLAGS.layers.split(",")]
-
-    bert_config = modeling.BertConfig.from_json_file(FLAGS.bert_config_file)
-
-    tokenizer = tokenization.FullTokenizer(
-        vocab_file=FLAGS.vocab_file, do_lower_case=FLAGS.do_lower_case)
-
-    is_per_host = tf.contrib.tpu.InputPipelineConfig.PER_HOST_V2
-    run_config = tf.contrib.tpu.RunConfig(
-        master=FLAGS.master,
-        tpu_config=tf.contrib.tpu.TPUConfig(
-            num_shards=FLAGS.num_tpu_cores,
-            per_host_input_for_training=is_per_host))
-
-    examples = read_examples(FLAGS.input_file)
-
-    features = convert_examples_to_features(
-        examples=examples, seq_length=FLAGS.max_seq_length, tokenizer=tokenizer)
-
-    unique_id_to_feature = {}
-    for feature in features:
-        unique_id_to_feature[feature.unique_id] = feature
-
-    model_fn = model_fn_builder(
-        bert_config=bert_config,
-        init_checkpoint=FLAGS.init_checkpoint,
-        layer_indexes=layer_indexes,
-        use_tpu=FLAGS.use_tpu,
-        use_one_hot_embeddings=FLAGS.use_one_hot_embeddings)
-
-    # If TPU is not available, this will fall back to normal Estimator on CPU
-    # or GPU.
-    estimator = tf.contrib.tpu.TPUEstimator(
-        use_tpu=FLAGS.use_tpu,
-        model_fn=model_fn,
-        config=run_config,
-        predict_batch_size=FLAGS.batch_size)
-
-    input_fn = input_fn_builder(
-        features=features, seq_length=FLAGS.max_seq_length)
-
-    with codecs.getwriter("utf-8")(tf.gfile.Open(FLAGS.output_file,
-                                                 "w")) as writer:
-        for result in estimator.predict(input_fn, yield_single_examples=True):
-            unique_id = int(result["unique_id"])
-            feature = unique_id_to_feature[unique_id]
-            output_json = collections.OrderedDict()
-            output_json["linex_index"] = unique_id
-            all_features = []
-            for (i, token) in enumerate(feature.tokens):
-                all_layers = []
-                for (j, layer_index) in enumerate(layer_indexes):
-                    layer_output = result["layer_output_%d" % j]
-                    layers = collections.OrderedDict()
-                    layers["index"] = layer_index
-                    layers["values"] = [
-                        round(float(x), 6) for x in layer_output[i:(i + 1)].flat
-                    ]
-                    all_layers.append(layers)
-                features = collections.OrderedDict()
-                features["token"] = token
-                features["layers"] = all_layers
-                all_features.append(features)
-            output_json["features"] = all_features
-            writer.write(json.dumps(output_json) + "\n")
+def json2text(data_dir, split):
+    counter = 0
+    with open('%s/dev_%s_text.txt' % (data_dir, split), 'w', encoding='utf-8') as writer:
+        for i, ins in enumerate(json.load(open('%s/dev_%s.json' % (data_dir, split), 'r', encoding='utf8'))):
+            toks = []
+            for sent in ins['sents']:
+                toks.extend(sent)
+            if len(toks) > 450:
+                counter += 1
+            s = ' '.join(toks)
+            s1 = '   '  # 3 space
+            s2 = '   '  # space + chinese_space + space
+            # here s1 and s2 are not the same
+            s = s.replace(s1, s2)
+            s = s.replace('  ', ' ')  # replace 2 space with 1 space
+            if i > 0:
+                writer.write('\n' + s)
+            else:
+                writer.write(s)
+    print('%s, greater than 450: %d' % (split, counter))
+    # dev 10, train 15, test 7
 
 
-def main__(_):
+def post_process(data_dir, split, num_example, padding=True, bert_embedd_dim=768):
+    orig_text = codecs.open('%s/dev_%s_text.txt' % (data_dir, split), 'r', encoding='utf8').readlines()
+    bert_text = codecs.open('%s/dev_%s_bert_text.json' % (data_dir, split), 'r', encoding='utf8').readlines()
+    with h5py.File('%s/dev_%s_text.h5' % (data_dir, split), 'r') as in_h5, \
+            h5py.File('%s/%d_dev_%s.h5' % (data_dir, bert_embedd_dim, split), 'w') as out_h5:
+        for idx in range(num_example):
+            bert_ex = json.loads(bert_text[idx].strip())
+            bert_tokens = bert_ex['tokens'].split(' ')
+            orig_tokens_len = len(orig_text[idx].strip().split(' '))
+            ex_feature = in_h5[str(idx) + 'feature']
+            orig_to_tok_map = bert_ex['orig_to_tok_map']
+            ex_len_counter = 0
+            new_feature = []
+            for i in range(len(orig_to_tok_map)):
+                _start = 1 if i == 0 else orig_to_tok_map[i-1]
+                _end = orig_to_tok_map[i]
+                _word_pieces = bert_tokens[_start: _end]
+                if len(_word_pieces) == 0:
+                    break
+                if _word_pieces[-1] == '[SEP]':
+                    _word_pieces = _word_pieces[:-1]
+                    _end -= 1
+                    if len(_word_pieces) == 0:
+                        break
+                # if _start >= 505:
+                # print('{:<20} | {}[{}, {}]'.format(orig_tokens[i], ' '.join(_word_pieces), _start, _end))
+                # for single-piece-token use vector itself, for multi-piece-token use average pooling over pieces.
+                align_feature = ex_feature[_start, :] if _start == _end else np.mean(ex_feature[_start: _end, :], axis=0)
+                new_feature.append(align_feature)
+                ex_len_counter += 1
+            assert ex_len_counter <= orig_tokens_len, 'ERROR'
+            if ex_len_counter < orig_tokens_len and padding:
+                pad = [0.]*bert_embedd_dim
+                for _ in range(orig_tokens_len-ex_len_counter):
+                    new_feature.append(pad)
+            new_feature = np.array(new_feature).astype(np.float32)
+            if padding:
+                assert new_feature.shape == (orig_tokens_len, bert_embedd_dim), 'ERROR'
+            out_h5.create_dataset(name=str(idx),
+                                  shape=new_feature.shape,
+                                  dtype='float32',
+                                  data=new_feature)
+
+
+def process_main(split):
     tf.logging.set_verbosity(tf.logging.INFO)
 
     layer_indexes = [int(x) for x in FLAGS.layers.split(",")]
@@ -440,7 +440,9 @@ def main__(_):
             num_shards=FLAGS.num_tpu_cores,
             per_host_input_for_training=is_per_host))
 
-    examples = read_examples(FLAGS.input_file)
+    data_dir = FLAGS.data_dir
+
+    examples = read_examples("%s/dev_%s_text.txt" % (data_dir, split))
 
     features = convert_examples_to_features(
         examples=examples, seq_length=FLAGS.max_seq_length, tokenizer=tokenizer)
@@ -448,6 +450,21 @@ def main__(_):
     unique_id_to_feature = {}
     for feature in features:
         unique_id_to_feature[feature.unique_id] = feature
+
+    num_dict = {'train': 3053, 'dev': 1000, 'test': 1000}
+
+    NUM = num_dict[split]
+    with open('%s/dev_%s_bert_text.json' % (data_dir, split), 'w', encoding='utf8') as writer:
+        for idx in range(NUM):
+            bert_tokens = unique_id_to_feature[idx].tokens
+            out_ex = {
+                'tokens': ' '.join(bert_tokens),
+                'orig_to_tok_map': unique_id_to_feature[idx].orig_to_tok_map
+            }
+            if idx > 0:
+                writer.write('\n' + json.dumps(out_ex, ensure_ascii=False))
+            else:
+                writer.write(json.dumps(out_ex, ensure_ascii=False))
 
     model_fn = model_fn_builder(
         bert_config=bert_config,
@@ -466,9 +483,8 @@ def main__(_):
 
     input_fn = input_fn_builder(
         features=features, seq_length=FLAGS.max_seq_length)
-    import numpy as np
-    import h5py
-    with h5py.File(FLAGS.output_file, 'w') as writer:
+
+    with h5py.File("%s/dev_%s_text.h5" % (data_dir, split), 'w') as writer:
         for result in estimator.predict(input_fn, yield_single_examples=True):
             unique_id = int(result["unique_id"])
             feature = unique_id_to_feature[unique_id]
@@ -481,9 +497,9 @@ def main__(_):
             bert_tokens = [t.encode('utf-8') for t in feature.tokens]
             orig_tokens = [t.encode('utf-8') for t in feature.orig_tokens]
             sent_repr = np.array(sent_repr)
-            print(feature.tokens)
+            # print(feature.tokens)
             token_max_len = max([len(w) for w in feature.orig_tokens])
-            print(feature.orig_tokens)
+            # print(feature.orig_tokens)
             bert_token_max_len = max([len(w) for w in feature.tokens])
             writer.create_dataset(name=str(unique_id) + 'orig_tokens',
                                   shape=(len(orig_tokens), ),
@@ -498,47 +514,20 @@ def main__(_):
                                   dtype='float32',
                                   data=sent_repr)
 
+    post_process(data_dir, split, NUM)
+
 
 def main(_):
-    tf.logging.set_verbosity(tf.logging.INFO)
-
-    layer_indexes = [int(x) for x in FLAGS.layers.split(",")]
-    assert len(layer_indexes) == 1 and layer_indexes[0] == -1, 'This support `-1` layer only.'
-
-    tokenizer = tokenization.FullTokenizer(
-        vocab_file=FLAGS.vocab_file, do_lower_case=FLAGS.do_lower_case)
-
-    examples = read_examples(FLAGS.input_file)
-
-    features = convert_examples_to_features(
-        examples=examples, seq_length=FLAGS.max_seq_length, tokenizer=tokenizer)
-
-    unique_id_to_feature = {}
-    for feature in features:
-        unique_id_to_feature[feature.unique_id] = feature
-
-    split = 'error'
-    num_dict = {'train': 3053, 'dev': 1000, 'test': 1000, 'error': 7}
-    NUM = num_dict[split]
-    with open('E:/workspace/repo/DocRED/code/prepro_data/dev_%s_bert_text.json' % split, 'w', encoding='utf8') as writer:
-        for idx in range(NUM):
-            bert_tokens = unique_id_to_feature[idx].tokens
-            out_ex = {
-                'tokens': ' '.join(bert_tokens),
-                'orig_to_tok_map': unique_id_to_feature[idx].orig_to_tok_map
-            }
-            if idx > 0:
-                writer.write('\n' + json.dumps(out_ex, ensure_ascii=False))
-            else:
-                writer.write(json.dumps(out_ex, ensure_ascii=False))
+    for split in ['test', 'dev', 'train']:
+        json2text(FLAGS.data_dir, split)
+        process_main(split)
 
 
 if __name__ == "__main__":
-    flags.mark_flag_as_required("input_file")
+    flags.mark_flag_as_required("data_dir")
     flags.mark_flag_as_required("vocab_file")
     flags.mark_flag_as_required("bert_config_file")
     flags.mark_flag_as_required("init_checkpoint")
-    flags.mark_flag_as_required("output_file")
     tf.app.run()
 
 

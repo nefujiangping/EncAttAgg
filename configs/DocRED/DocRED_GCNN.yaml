@@ -1,6 +1,6 @@
 # data for train/test
-data_path: "/home/jp/workspace2/DocRED/code/prepro_data"
-bert_embedding_dir: "/home2/public/jp/DocRED"
+data_path: "./data/DocRED"
+bert_embedding_dir: "./data/DocRED"
 checkpoint_dir: "./checkpoint"
 log_dir: "./log"
 summary_dir: "./summary"  # this dir saves the training logs (use tensorboard to visualize); backup codes

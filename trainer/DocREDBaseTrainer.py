@@ -40,7 +40,7 @@ class BaseTrainer(Functional):
         self.data_train_word = np.load(os.path.join(self.data_path, prefix + '_word.npy'))
         self.data_train_pos = np.load(os.path.join(self.data_path, prefix + '_pos.npy'))
         self.data_train_ner = np.load(os.path.join(self.data_path, prefix + '_ner.npy'))
-        self.data_train_char = np.load(os.path.join(self.data_path, prefix + '_char.npy'))
+        # self.data_train_char = np.load(os.path.join(self.data_path, prefix + '_char.npy'))
         self.train_file = json.load(open(os.path.join(self.data_path, prefix + '.json')))
         self.train_bert_feature = f'{self.bert_embedding_dir}/{self.bert_embedd_dim}_dev_train.h5'
 
@@ -69,7 +69,7 @@ class BaseTrainer(Functional):
         self.data_test_word = np.load(os.path.join(self.data_path, prefix + '_word.npy'))
         self.data_test_pos = np.load(os.path.join(self.data_path, prefix + '_pos.npy'))
         self.data_test_ner = np.load(os.path.join(self.data_path, prefix + '_ner.npy'))
-        self.data_test_char = np.load(os.path.join(self.data_path, prefix + '_char.npy'))
+        # self.data_test_char = np.load(os.path.join(self.data_path, prefix + '_char.npy'))
         self.test_file = json.load(open(os.path.join(self.data_path, prefix + '.json')))
         self.test_bert_feature = f'{self.bert_embedding_dir}/{self.bert_embedd_dim}_{prefix}.h5'
 

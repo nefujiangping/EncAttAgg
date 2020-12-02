@@ -5,7 +5,6 @@ import random
 import numpy as np
 import os
 import yaml
-from yaml import CDumper
 import json
 from misc.metrics import Accuracy
 from misc.constant import dirs_to_backup
@@ -158,7 +157,7 @@ class Functional(object):
                 sh_copy(f"./{_file}", f"./{backup_dir}/{_file}")
         # backup params
         _file = os.path.basename(self.params['param_file'])
-        yaml.dump(self.params, open(f"{backup_dir}/{self.exp_id}___{_file}", 'w'), CDumper)
+        yaml.dump(self.params, open(f"{backup_dir}/{self.exp_id}___{_file}", 'w'))
 
     def visualize_data(self, prefix, data, n=1, max_len=30):
         def to_np(from_data, dtype='int32'):

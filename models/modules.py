@@ -1,6 +1,5 @@
 import copy
 from typing import List
-import math
 
 import torch
 from torch import nn
@@ -9,7 +8,7 @@ from torch.autograd import Variable
 from torch.nn.utils import rnn
 from torch.nn import ModuleList
 
-from allennlp.nn import util
+import models.utils as util
 
 from misc import constant as CST
 

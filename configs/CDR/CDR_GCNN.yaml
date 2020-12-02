@@ -1,6 +1,6 @@
 # data for train/test
-data_path: "/home/jp/workspace2/datasets/CDR_PubMed_with_KBID"
-bert_embedding_dir: "/home2/public/jp/CDR_bert_features"
+data_path: "./data/CDR"
+bert_embedding_dir: "./data/CDR"
 checkpoint_dir: "./checkpoint"
 log_dir: "./log"
 summary_dir: "./summary"

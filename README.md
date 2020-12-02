@@ -8,8 +8,8 @@ We propose an effective **Enc**oder-**Att**ender-**Agg**regator (EncAttAgg) mode
 
 ## Requirements
 + python 3.7.4
-+ pytorch 1.3.0
-+ [allennlp](https://allennlp.org/tutorials) 0.9.0
++ scikit-learn
++ pytorch (1.3.0 or 1.7.0)
 + yaml
 + tensorboardX
 ## Datasets
@@ -18,6 +18,9 @@ We propose an effective **Enc**oder-**Att**ender-**Agg**regator (EncAttAgg) mode
 + [DocRED](https://github.com/thunlp/DocRED) [3]. DocRED is a large-scaled document-level dataset presented by Yao et al. for general purpose RE, which contains 5053 documents and is split into 3053, 1000 and 1000 for training, development and testing. The dataset contains 6 general entity types and 96 relation types.
 
 ## Usage
+### data pre-processing
+Refer to [data pre-processing](https://github.com/nefujiangping/EncAttAgg/blob/master/pre-processing/README.md) for more details.
+
 ### train our model
 ```shell
 python train.py --param_file ${param_file} --gpu 0,1 --exp_id EncAttAgg --randseed_no 0
@@ -42,5 +45,7 @@ Please refer to the [paper](https://conferences.computer.org/ickg/pdfs/ICKG2020-
 1. Wei, Chih-Hsuan and Peng, Yifan and Leaman, R. and Davis, Allan Peter and Mattingly, C.J. and Li, J. and Wiegers, T.C. and lu, Zhiyong. Overview of the BioCreative V chemical disease relation (CDR) task
 2. Li, Jiao and Sun, Yueping and Johnson, Robin J. and Sciaky, Daniela and Wei, Chih-Hsuan and Leaman, Robert and Davis, Allan Peter and Mattingly, Carolyn J. and Wiegers, Thomas C. and Lu, Zhiyong. BioCreative V CDR task corpus: a resource for chemical disease relation extraction
 3. Yao, Yuan  and Ye, Deming  and Li, Peng  and Han, Xu  and Lin, Yankai  and Liu, Zhenghao  and Liu, Zhiyuan  and Huang, Lixin  and Zhou, Jie  and Sun, Maosong. DocRED: A Large-Scale Document-Level Relation Extraction Dataset.
-
+4. [Allennlp.nn.util](https://github.com/allenai/allennlp/blob/master/allennlp/nn/util.py)
+5. [DocRED](https://github.com/thunlp/DocRED)
+6. [bran](https://github.com/patverga/bran)
 
