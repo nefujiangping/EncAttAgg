@@ -60,7 +60,7 @@ use_neg_sample: true
 neg_sample_multiplier: 5
 train_rel_limit_per_example: 200  # all positive pairs + random selected (200-#pos.) negative pairs, to train
 max_epoch: 70
-epoch_start_to_eval: 1  # evaluation takes the most time of training process, so during the first 40 epoch we do not eval
+epoch_start_to_eval: 40  # evaluation takes the most time of training process, so during the first 40 epoch we do not eval
 # For test
 test_batch_size: 1  # aggregating all mention pairs is memory-consuming, so we set a small test batch size here
 test_rel_limit_per_example: 1800  # all possible pairs should be fed for prediction
