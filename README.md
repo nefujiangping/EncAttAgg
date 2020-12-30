@@ -1,6 +1,6 @@
 EncAttAgg
 ---------
-# ====== 2020.12.30 Update: codes have been re-constructed to [main]() branch, the master branch is deprecated. ======
+# ====== 2020.12.30 Update: codes have been re-constructed to [main](https://github.com/nefujiangping/EncAttAgg/tree/main) branch, the master branch is deprecated. ======
 
 This is the source code for ICKG 2020 paper "[Improving Document-level Relation Extraction via Contextualizing Mention Representations and Weighting Mention Pairs](https://conferences.computer.org/ickg/pdfs/ICKG2020-66r9RP2mQIZywMjHhQVtDI/815600a305/815600a305.pdf)"
 
