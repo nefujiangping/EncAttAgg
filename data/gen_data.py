@@ -2,17 +2,20 @@ import numpy as np
 import os
 import json
 import argparse
+from transformers import AutoTokenizer
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--in_path', type=str, default="../data")
-parser.add_argument('--out_path', type=str, default="prepro_data")
+parser.add_argument('--in_path', type=str, default="./prepro_data/DocRED")
+parser.add_argument('--out_path', type=str, default="./prepro_data/DocRED")
+parser.add_argument('--pretrained_model_name_or_path', type=str, default="bert-base-cased")
 
 args = parser.parse_args()
 in_path = args.in_path
 out_path = args.out_path
-case_sensitive = False
+tokenizer = AutoTokenizer.from_pretrained(args.pretrained_model_name_or_path)
+pad_token_id = tokenizer.pad_token_id
+pieces_per_token_limit = 6  # 99.9% tokens have #word-pieces smaller than 6
 
-char_limit = 16
 train_distant_file_name = os.path.join(in_path, 'train_distant.json')
 train_annotated_file_name = os.path.join(in_path, 'train_annotated.json')
 dev_file_name = os.path.join(in_path, 'dev.json')
@@ -27,11 +30,13 @@ fact_in_dev_train = set([])
 
 def init(data_file_name, rel2id, max_length=512, is_training=True, suffix=''):
     ori_data = json.load(open(data_file_name))
-
+    if is_training:
+        name_prefix = "train"
+    else:
+        name_prefix = "dev"
     Ma = 0
     Ma_e = 0
     data = []
-    intrain = notintrain = notindevtrain = indevtrain = 0
     for i in range(len(ori_data)):
         Ls = [0]
         L = 0
@@ -111,26 +116,11 @@ def init(data_file_name, rel2id, max_length=512, is_training=True, suffix=''):
         Ma_e = max(Ma_e, len(item['labels']))
 
     print('data_len:', len(ori_data))
-    # print ('Ma_V', Ma)
-    # print ('Ma_e', Ma_e)
-    # print (suffix)
-    # print ('fact_in_train', len(fact_in_train))
-    # print (intrain, notintrain)
-    # print ('fact_in_devtrain', len(fact_in_dev_train))
-    # print (indevtrain, notindevtrain)
 
     # saving
     print("Saving files")
-    if is_training:
-        name_prefix = "train"
-    else:
-        name_prefix = "dev"
 
     json.dump(data, open(os.path.join(out_path, name_prefix + suffix + '.json'), "w"))
-
-    char2id = json.load(open(os.path.join(out_path, "char2id.json")))
-    # id2char= {v:k for k,v in char2id.items()}
-    # json.dump(id2char, open("data/id2char.json", "w"))
 
     word2id = json.load(open(os.path.join(out_path, "word2id.json")))
     ner2id = json.load(open(os.path.join(out_path, "ner2id.json")))
@@ -139,7 +129,11 @@ def init(data_file_name, rel2id, max_length=512, is_training=True, suffix=''):
     sen_word = np.zeros((sen_tot, max_length), dtype=np.int64)
     sen_pos = np.zeros((sen_tot, max_length), dtype=np.int64)
     sen_ner = np.zeros((sen_tot, max_length), dtype=np.int64)
-    sen_char = np.zeros((sen_tot, max_length, char_limit), dtype=np.int64)
+    token_pieces_map = np.zeros((sen_tot, max_length, pieces_per_token_limit), dtype=np.int64)
+    token_pieces_map_mask = np.zeros((sen_tot, max_length, pieces_per_token_limit), dtype=np.int64)
+    input_ids = np.ones((sen_tot, 1024), dtype=np.int64) * int(pad_token_id)
+
+    offset = 1  # [CLS]
 
     for i in range(len(ori_data)):
         item = ori_data[i]
@@ -147,19 +141,26 @@ def init(data_file_name, rel2id, max_length=512, is_training=True, suffix=''):
         for sent in item['sents']:
             words += sent
 
+        doc_pieces = []
+        first_piece_idx = offset
         for j, word in enumerate(words):
-            word = word.lower()
 
             if j < max_length:
-                if word in word2id:
-                    sen_word[i][j] = word2id[word]
+                if word.lower() in word2id:
+                    sen_word[i][j] = word2id[word.lower()]
                 else:
                     sen_word[i][j] = word2id['UNK']
 
-                for c_idx, k in enumerate(list(word)):
-                    if c_idx >= char_limit:
-                        break
-                    sen_char[i, j, c_idx] = char2id.get(k, char2id['UNK'])
+                word_pieces = tokenizer.tokenize(word)
+                doc_pieces += word_pieces
+                num_pieces = min(len(word_pieces), pieces_per_token_limit)
+                token_pieces_map[i, j, :num_pieces] = list(range(first_piece_idx, first_piece_idx + num_pieces))
+                token_pieces_map_mask[i, j, :num_pieces] = 1
+                first_piece_idx = first_piece_idx + len(word_pieces)
+
+        doc_pieces = tokenizer.convert_tokens_to_ids(doc_pieces)
+        doc_pieces = tokenizer.build_inputs_with_special_tokens(doc_pieces)
+        input_ids[i, :len(doc_pieces)] = doc_pieces
 
         for j in range(j + 1, max_length):
             sen_word[i][j] = word2id['BLANK']
@@ -171,11 +172,19 @@ def init(data_file_name, rel2id, max_length=512, is_training=True, suffix=''):
                 sen_pos[i][v['pos'][0]:v['pos'][1]] = idx
                 sen_ner[i][v['pos'][0]:v['pos'][1]] = ner2id[v['type']]
 
+        if i < 2:
+            for e_i, (token, ner, cluster, wordpieces) in enumerate(
+                    zip(words, sen_ner[i], sen_pos[i], token_pieces_map[i])):
+                print(e_i, token, ner, cluster, wordpieces, tokenizer.convert_ids_to_tokens(
+                    input_ids[i, wordpieces[0]: wordpieces[(wordpieces > 0).sum() - 1] + 1]))
+
     print("Finishing processing")
     np.save(os.path.join(out_path, name_prefix + suffix + '_word.npy'), sen_word)
+    np.save(os.path.join(out_path, name_prefix + suffix + '_input_ids.npy'), input_ids)
+    np.save(os.path.join(out_path, name_prefix + suffix + '_pieces_token_map.npy'), token_pieces_map)
+    np.save(os.path.join(out_path, name_prefix + suffix + '_pieces_token_map_mask.npy'), token_pieces_map_mask)
     np.save(os.path.join(out_path, name_prefix + suffix + '_pos.npy'), sen_pos)
     np.save(os.path.join(out_path, name_prefix + suffix + '_ner.npy'), sen_ner)
-    np.save(os.path.join(out_path, name_prefix + suffix + '_char.npy'), sen_char)
     print("Finish saving")
 
 

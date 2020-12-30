@@ -1,3 +1,4 @@
-/.idea
 /tmp
-/analysis
+/.idea
+/wandb/*
+!/wandb/wandb_config.yaml

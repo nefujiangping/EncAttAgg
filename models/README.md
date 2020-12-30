@@ -1,1 +1,3 @@
-util.py is copied from [Allennlp](https://allennlp.org/) https://github.com/allenai/allennlp/blob/master/allennlp/nn/util.py
+- `long_seq.py` is copied from [wzhouad/ATLOP](https://github.com/wzhouad/ATLOP): [long_seq.py](https://github.com/wzhouad/ATLOP/blob/main/long_seq.py)
+- `model_utils.py` is copied from [allenai/allennlp](https://github.com/allenai/allennlp): [util.py](https://github.com/allenai/allennlp/blob/master/allennlp/nn/util.py)
+- `lock_dropout.py` is copied from [PetrochukM/PyTorch-NLP](https://github.com/PetrochukM/PyTorch-NLP): [lock_dropout.py](https://github.com/PetrochukM/PyTorch-NLP/blob/master/torchnlp/nn/lock_dropout.py)

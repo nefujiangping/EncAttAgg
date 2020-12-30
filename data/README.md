@@ -1,9 +1,11 @@
-Data Description
----------
+Data pre-processing
+--------------
 
 # DocRED
-Part of data files are uploaded to [BaiDu Drive](https://pan.baidu.com/s/1uwm88j9wjSQ5Q9phx9UekQ) (CODE: sth4, directory `DocRED`) (bert document representations are too large and are not uploaded).
-Please refer to [data-processing of DocRED](https://github.com/nefujiangping/EncAttAgg/tree/master/pre-processing) for more information.
-
-# CDR
-Data files required by the model are uploaded to [BaiDu Drive](https://pan.baidu.com/s/1uwm88j9wjSQ5Q9phx9UekQ) (CODE: sth4, directory `CDR`), please download the data of CDR to `CDR` directory.
+- Note that [transformers](https://github.com/huggingface/transformers/issues) is required.
+- Download DocRED meta data to `prepro_data/DocRED`, from [TsinghuaCloud](https://cloud.tsinghua.edu.cn/d/99e1c0805eb64736af95/) or [GoogleDrive](https://drive.google.com/drive/folders/1Ri3LIILKKBi3aBJjUVCOBpGX5PpONHRK).
+- Make sure that these 7 files `[train_distant.json, train_annotated.json, dev.json, test.json, rel2id.json, word2id.json, ner2id.json]` are in the directory of `prepro_data/DocRED`.
+- Then run:
+    ```shell
+    python gen_data.py --in_path prepro_data/DocRED --out_path prepro_data/DocRED --pretrained_model_name_or_path bert-base-cased
+    ```

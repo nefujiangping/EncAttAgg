@@ -1,11 +1,5 @@
-import logging
-from typing import Optional, TypeVar
-
+from typing import Optional
 import torch
-
-logger = logging.getLogger(__name__)
-
-T = TypeVar("T")
 
 
 class ConfigurationError(Exception):
@@ -132,7 +126,7 @@ def get_device_of(tensor: torch.Tensor) -> int:
         return tensor.get_device()
 
 
-def flatten_and_batch_shift_indices(indices: torch.Tensor, sequence_length: int) -> torch.Tensor:
+def flatten_and_batch_shift_indices(indices: torch.Tensor, sequence_length: int) -> torch.LongTensor:
     """
     This is a subroutine for [`batched_index_select`](./util.md#batched_index_select).
     The given `indices` of size `(batch_size, d_1, ..., d_n)` indexes into dimension 2 of a

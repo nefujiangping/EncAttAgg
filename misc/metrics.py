@@ -1,5 +1,6 @@
 import json
 from typing import List, Dict, Tuple, Set
+import numpy as np
 
 
 class Accuracy(object):
@@ -348,6 +349,49 @@ def diff_dist_performance(true_file, test_result: List, ret_overall=False) -> Di
     r = (1.0*types_pred_correct[1] / types_num_true_all[1]) if types_num_true_all[1] > 0 else 0.
     f1['ign_dist:26+'] = (2*p*r/(p+r)) if (p+r) > 0 else 0.
     return f1
+
+
+def compute_f1(test_result, total_recall, input_theta):
+    pr_x, pr_y = [], []
+    correct = w = 0
+
+    for i, item in enumerate(test_result):
+        correct += item[0]
+        pr_y.append(float(correct) / (i + 1))
+        pr_x.append(float(correct) / total_recall)
+        if item[1] > input_theta:
+            w = i
+
+    pr_x = np.asarray(pr_x, dtype='float32')
+    pr_y = np.asarray(pr_y, dtype='float32')
+    f1_arr = (2 * pr_x * pr_y / (pr_x + pr_y + 1e-20))
+    f1_pos = f1_arr.argmax()
+    all_f1 = f1_arr[f1_pos]
+    return w, pr_x, pr_y, f1_pos, all_f1
+
+
+def compute_ign_f1(test_result, total_recall, input_theta):
+    pr_x, pr_y = [], []
+    correct = correct_in_train = 0
+    w = 0
+    for i, item in enumerate(test_result):
+        correct += item[0]
+        if item[0] & item[2]:
+            correct_in_train += 1
+        if correct_in_train == correct:
+            p = 0
+        else:
+            p = float(correct - correct_in_train) / (i + 1 - correct_in_train)
+        pr_y.append(p)
+        pr_x.append(float(correct) / total_recall)
+        if item[1] > input_theta:
+            w = i
+    pr_x = np.asarray(pr_x, dtype='float32')
+    pr_y = np.asarray(pr_y, dtype='float32')
+    f1_arr = (2 * pr_x * pr_y / (pr_x + pr_y + 1e-20))
+    max_f1_pos = f1_arr.argmax()
+    f1 = f1_arr[max_f1_pos]
+    return f1_arr[w], pr_x, pr_y, max_f1_pos, f1
 
 
 if __name__ == '__main__':
