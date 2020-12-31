@@ -5,7 +5,7 @@ This is the source code for ICKG 2020 paper "[Improving Document-level Relation 
 We propose an effective **Enc**oder-**Att**ender-**Agg**regator (EncAttAgg) model for ducument-level RE. This model introduced two attenders to tackle two problems:
 1) We introduce a mutual attender layer to efficiently obtain the entity-pair-specific mention representations.
 2) We introduce an integration attender to weight mention pairs of a target entity pair.
-![model_overview.png](https://github.com/nefujiangping/EncAttAgg/tree/master/images/model_overview.png.png)
+![model_overview.png](https://github.com/nefujiangping/EncAttAgg/tree/master/images/model_overview.png)
 
 ## Requirements
 + python 3.7.4
