@@ -130,7 +130,7 @@ class BiLSTMEncoder(nn.Module):
         for i in range(self.nlayers):
             hidden, c = self.get_init(bsz, i)
 
-            output = self.dropout(output)
+            output = self.dropout(output, batch_first=True)
             if input_lengths is not None:
                 output = torch.nn.utils.rnn.pack_padded_sequence(
                     output, input_lengths, batch_first=True, enforce_sorted=False)
