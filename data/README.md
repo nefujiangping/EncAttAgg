@@ -9,3 +9,6 @@ Data pre-processing
     ```shell
     python gen_data.py --in_path prepro_data/DocRED --out_path prepro_data/DocRED --pretrained_model_name_or_path bert-base-cased
     ```
+# CDR
+- Download pre-processed CDR data from [BaiduNetdisk](https://pan.baidu.com/s/1TShYAqqK1uL-YvTFYggNsQ) with CODE `zbxb`.
+- Move the downloaded CDR folder to `prepro_data/`.
